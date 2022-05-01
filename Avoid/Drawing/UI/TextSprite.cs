@@ -18,12 +18,12 @@ namespace Avoid.Drawing.UI
 		private Bitmap bmp;
 		private int width = 480;
 		private int height = 50;
-
+		public int fontSize = 28;
 		// Text opacity
 		public float textOpacity = 1f;
 
 		// Renderables
-		private Sprite sprite;
+		public Sprite sprite;
 
         public TextSprite(Bounds bounds, string text, Vector2i size)
 		{
@@ -46,7 +46,7 @@ namespace Avoid.Drawing.UI
 			collection.AddFontFile(@"Files/font.ttf");
 			FontFamily fontFamily = new FontFamily("Open Sans", collection);
 
-			Font font = new Font(fontFamily, 28);
+			Font font = new Font(fontFamily, fontSize);
 			
 			var gfx = Graphics.FromImage(bmp);
 			var brush = Brushes.White;

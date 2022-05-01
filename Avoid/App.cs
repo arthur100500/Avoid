@@ -15,7 +15,7 @@ namespace Avoid
 	public class App : GameWindow
 	{
 		private float oTime;
-		IScene scene = new GameScene();
+		IScene scene = new MultiplayerGameScene();
 		private App(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings)
 		{
 			// Enable things for correct texture opacity handling
