@@ -32,6 +32,7 @@ namespace Avoid.Server.GamePlay
 
 		public void BeforeStart()
 		{
+			Console.WriteLine("\n\nWaiting for players");
 			while (true)
 				if (newMessage)
 				{
@@ -54,6 +55,11 @@ namespace Avoid.Server.GamePlay
 
 		public void OnStart()
 		{
+			Console.WriteLine("\n\nGame started");
+			// Send data to all players that the game has begun
+			foreach (var p in players)
+				sender.SendData(p.CallBackIP, "GB");
+
 			// While someone is alive
 			while (true)
 			{
@@ -179,6 +185,9 @@ namespace Avoid.Server.GamePlay
 
 		public void RegisterPlyer(string message)
 		{
+			foreach (var p in players)
+				if (message.Split(" : ")[1] == p.Name)
+					sender.SendData(new IPEndPoint(IPAddress.Parse(message.Split(" : ")[0].Split(":")[0]), 11001), "Player with this nickname is already playing");
 			players.Add(new Player(message.Split(" : ")[1], new IPEndPoint(IPAddress.Parse(message.Split(" : ")[0].Split(":")[0]), 11001)));
 			Console.WriteLine("Added player: " + players.Last().Name);
 			// some form of callback

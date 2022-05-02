@@ -13,8 +13,6 @@ namespace Avoid.Server
 			Console.WriteLine("");
 			Console.WriteLine("Working on IP: " + GetLocalIPAddress());
 			Console.WriteLine("Working on Port: " + "11000/11001");
-			Console.WriteLine("");
-			Console.WriteLine("Waiting for players to join");
 
 			//try
 			//{

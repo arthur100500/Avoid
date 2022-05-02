@@ -18,7 +18,7 @@ namespace Avoid.Scenes.GameScene
 
 
 
-		public MultiplayerGameoverSplash(string result, App app, Action retry)
+		public MultiplayerGameoverSplash(string result, App app)
 		{
 			darkening = new RectangleBackground(new Bounds(1.1, 1.1, -1.1, -1.1));
 
@@ -41,6 +41,11 @@ namespace Avoid.Scenes.GameScene
 
 			scoreLabel.Load();
 			scoreLabel.Update(_app.MouseState);
+		}
+
+		public void SetResult(string result)
+		{
+			scoreLabel.textSprite.UpdateText(result);
 		}
 
 		public void Render()
