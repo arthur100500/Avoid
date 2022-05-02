@@ -165,5 +165,10 @@ namespace Avoid.Scenes.GameScene
 			state = GameState.Running;
 			score = 0;
 		}
+
+		public void Close()
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

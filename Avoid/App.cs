@@ -9,6 +9,7 @@ using Avoid.Gameplay;
 using Avoid.Gameplay.Obstacle;
 using Avoid.Scenes;
 using Avoid.Scenes.GameScene;
+using System.ComponentModel;
 
 namespace Avoid
 {
@@ -83,6 +84,15 @@ namespace Avoid
 		private void FixedUpdate()
 		{
 			scene.FixedUpdate();
+		}
+
+		protected override void OnClosing(CancelEventArgs e)
+		{
+			scene.Close();
+			
+			base.OnClosing(e);
+
+			Environment.Exit(0);
 		}
 
 		protected override void OnResize(ResizeEventArgs e)

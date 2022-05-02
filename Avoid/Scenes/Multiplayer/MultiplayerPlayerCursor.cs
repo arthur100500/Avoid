@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Avoid.Scenes.Multiplayer
 {
-	public class PlayerCursor : IRenderable
+	public class MultiplayerPlayerCursor : IRenderable
 	{
 		public string Name;
 		public float Health;
@@ -24,7 +24,10 @@ namespace Avoid.Scenes.Multiplayer
 		public Vector2 Position;
 		public Vector2 Speed;
 
-		public PlayerCursor(Texture t, string name, Vector4 cursorColor, App app)
+		public bool IsDead { get; internal set; }
+		public bool WasDead { get; internal set; }
+
+		public MultiplayerPlayerCursor(Texture t, string name, Vector4 cursorColor, App app)
 		{
 			Name = name;
 			cursor = new Cursor(t, new Bounds(0.2, 0.2, -0.2, -0.2));

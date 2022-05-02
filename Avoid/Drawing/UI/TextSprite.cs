@@ -21,7 +21,7 @@ namespace Avoid.Drawing.UI
 		public int fontSize = 28;
 		// Text opacity
 		public float textOpacity = 1f;
-
+		public string Text;
 		// Renderables
 		public Sprite sprite;
 
@@ -56,6 +56,8 @@ namespace Avoid.Drawing.UI
 			gfx.DrawString(text, font, brush, new PointF(0, 0));
 
 			sprite.texture.UpdateData(bmp);
+
+			Text = text;
 		}
 
 		public void Render()

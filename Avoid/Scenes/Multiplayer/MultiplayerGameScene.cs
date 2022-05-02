@@ -20,8 +20,10 @@ namespace Avoid.Scenes.GameScene
 {
 	public class MultiplayerGameScene : IScene
 	{
+		private List<Thread> threads = new List<Thread>();
+
 		string yourName = File.ReadAllText("Files/mp.txt").Split(Environment.NewLine)[0];
-		List<PlayerCursor> otherPlayers = new List<PlayerCursor>();
+		List<MultiplayerPlayerCursor> otherPlayers = new List<MultiplayerPlayerCursor>();
 
 		UDPListener listener;
 		UDPSender sender;
@@ -36,28 +38,31 @@ namespace Avoid.Scenes.GameScene
 
 		Button scoreLabel;
 
-		public string Name => "Avoid. Game";
+		public string Name => "Avoid. Multiplayer";
 
 		private App _app;
 		public App Application { set => _app = value; }
 
 		// State
-		GameState state = GameState.Running;
-		GameoverSplash splash;
+		MultiplayerGameState state = MultiplayerGameState.WaitingOtherPlayers;
+		MultiplayerGameoverSplash splash;
 
 		float deathSpeedDecrease = 1;
 		private string lastMessageRecieved;
 		private bool newMessage;
+		private string newCircleMessage;
 
+		private MultiplayerPlayerList mpl;
 		public void FixedUpdate()
 		{
-			
+
+
 			Vector2 cpos = -(_app.MouseState.Position / _app.Size) * 2 + new Vector2(1);
 
 			foreach (var v in obstacles)
 			{
 
-				if (state == GameState.GameOver)
+				if (state == MultiplayerGameState.GameOver)
 				{
 					v.Speed *= deathSpeedDecrease;
 				}
@@ -73,7 +78,7 @@ namespace Avoid.Scenes.GameScene
 				}
 
 			foreach (var v in obstacles)
-				if (state == GameState.Running && v.CheckCollision(cpos))
+				if (state == MultiplayerGameState.Running && v.CheckCollision(cpos))
 				{
 
 					((Circle)v).CurrentColor = new Vector4(1, 0, 0, 1);
@@ -82,24 +87,30 @@ namespace Avoid.Scenes.GameScene
 				else
 					((Circle)v).CurrentColor = ((Circle)v).Color;
 
-			foreach(var p in otherPlayers)
+			var everyoneDead = true;
+			foreach (var p in otherPlayers)
 			{
 				p.Position += p.Speed;
 				p.SetToPosition(p.Position);
+				// Check if everyone is dead
+				if (!p.IsDead)
+					everyoneDead = false;
 			}
 
-			if (updateCount % 10 == 0 && state == GameState.Running)
-			{
+			if (everyoneDead && state == MultiplayerGameState.Running)
+				Gameover();
 
+			if (updateCount % 10 == 0 && state == MultiplayerGameState.Running)
+			{
 				score += obstacles.Count;
 			}
 
-			if (state == GameState.Running)
+			if (state == MultiplayerGameState.Running)
 				health += 0.001f;
 			health = MathF.Min(health, 1);
 			if (health < 0)
 			{
-				if (state != GameState.GameOver)
+				if (state != MultiplayerGameState.GameOver)
 					Gameover();
 				health = 0;
 			}
@@ -115,14 +126,15 @@ namespace Avoid.Scenes.GameScene
 				try
 				{
 					newMessage = false;
-					if (lastMessageRecieved.StartsWith("AC "))
-						RecieveCircle(lastMessageRecieved.Replace("AC ", "").Replace("; ", ";"));
+					if (newCircleMessage != null)
+					{
+						RecieveCircle(newCircleMessage.Replace("AC ", "").Replace("; ", ";"));
+						newCircleMessage = null;
+					}
 					if (lastMessageRecieved.StartsWith("UL "))
 						RefillPlayerList(lastMessageRecieved.Replace("UL ", "").Replace("; ", ";"));
 					if (lastMessageRecieved.StartsWith("UP "))
 						RefreshOtherPlayer(lastMessageRecieved.Replace("UP ", "").Replace("; ", ";"));
-
-					Console.WriteLine("Successfully done");
 				}
 				catch (Exception ex) { Console.WriteLine("Something went wrong!\n" + ex.ToString()); }
 			}
@@ -136,6 +148,16 @@ namespace Avoid.Scenes.GameScene
 				{
 					p.Position = FromString2(v.Split(" ")[1]);
 					p.Speed = FromString2(v.Split(" ")[2]);
+					if (v.Split(" ")[3].Trim() == "0")
+					{
+						p.IsDead = true;
+						if (p.IsDead && !p.WasDead)
+						{
+							p.WasDead = true;
+							mpl.MarkDeadPlayer(p.Name);
+						}
+					}
+
 				}
 			}
 		}
@@ -151,17 +173,20 @@ namespace Avoid.Scenes.GameScene
 			scoreLabel.colorIdle = new Vector4(1, 1, 1, 0.0f);
 			scoreLabel.colorHover = new Vector4(1, 1, 1, 0.0f);
 			scoreLabel.textSprite.textOpacity = 1f;
-			scoreLabel.Load();
+			//scoreLabel.Load();
 
-			hb = new Healthbar(new Bounds(0.95, 0.95, 0.05, 0.87), _app);
+			hb = new Healthbar(new Bounds(0.990, 0.990, 0.05, 0.92), _app);
 
 			hb.Load();
 
+			mpl = new MultiplayerPlayerList(new Bounds(-0.45, 1, -1.00, 0), new List<string>(), _app);
+			mpl.RecreateButtons(new List<string>());
 			// Net
 			sender = new UDPSender();
 			listener = new UDPListener();
 			// Start listening thread
-			new Thread(() => StartRecieving()).Start();
+			threads.Add(new Thread(() => StartRecieving()));
+			threads.Last().Start();
 
 			AddYourself(yourName);
 		}
@@ -172,7 +197,11 @@ namespace Avoid.Scenes.GameScene
 			{
 				lastMessageRecieved = listener.Recieve();
 				newMessage = true;
-
+				if (lastMessageRecieved.StartsWith("AC"))
+					newCircleMessage = lastMessageRecieved;
+				// Gameover, someone won
+				if (lastMessageRecieved == "GO")
+					Retry();
 				Console.WriteLine(lastMessageRecieved);
 			}
 		}
@@ -194,6 +223,7 @@ namespace Avoid.Scenes.GameScene
 			GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 			scoreLabel.Render();
 			hb.Render();
+			mpl.Render();
 
 			splash?.Render();
 
@@ -231,10 +261,17 @@ namespace Avoid.Scenes.GameScene
 
 		private void Gameover()
 		{
-			state = GameState.GameOver;
+			state = MultiplayerGameState.GameOver;
 			if (splash == null)
 			{
-				splash = new GameoverSplash(score, _app, Retry);
+				var message = "You've won ^^";
+				foreach (var p in otherPlayers)
+				{
+					if (!p.IsDead)
+						message = "You've lost :(";
+				}
+
+				splash = new MultiplayerGameoverSplash(message, _app, Retry);
 				splash.Load();
 			}
 			// Highscore
@@ -243,18 +280,20 @@ namespace Avoid.Scenes.GameScene
 			{
 				File.WriteAllText("Files/highscores.txt", score.ToString());
 			}
-			splash.SetScore(score, Math.Max(score, hscore));
 			splash.isHidden = false;
 		}
 
 		private void Retry()
 		{
-			splash.isHidden = true;
-
-			//obstacles.Clear();
+			if (splash != null)
+				splash.isHidden = true;
 			health = 1;
-			state = GameState.Running;
+			state = MultiplayerGameState.Running;
 			score = 0;
+			foreach (var p in otherPlayers)
+			{
+				p.IsDead = p.WasDead = false;
+			}
 		}
 
 		private void RecieveCircle(string circledata)
@@ -267,6 +306,9 @@ namespace Avoid.Scenes.GameScene
 			((Circle)obstacles.Last()).CurrentColor = FromString4(lines[3]);
 			obstacles.Last().Load();
 			obstacles.Last().Update();
+
+			if (state == MultiplayerGameState.WaitingOtherPlayers)
+				state = MultiplayerGameState.Running;
 		}
 
 		private Vector2 FromString2(string info)
@@ -290,13 +332,24 @@ namespace Avoid.Scenes.GameScene
 				try
 				{
 					if (cmd.Split(" ")[0] != yourName)
-						otherPlayers.Add(new PlayerCursor(cursorT, cmd.Split(" ")[0], FromString4(cmd.Split(" ")[1]), _app));
+						otherPlayers.Add(new MultiplayerPlayerCursor(cursorT, cmd.Split(" ")[0], FromString4(cmd.Split(" ")[1]), _app));
 				}
-				catch (Exception ex) { }
+				catch { }
 
+			var namelist = new List<string>();
 			foreach (var c in otherPlayers)
 			{
+				namelist.Add(c.Name);
 				c.Load();
+			}
+
+			mpl.RecreateButtons(new List<string>() { yourName }.Concat(namelist).ToList());
+		}
+
+		public void Close()
+		{
+			foreach (var t in threads)
+			{ // Here should be code to stop the thread but idk how
 			}
 		}
 	}

@@ -22,8 +22,6 @@ namespace Avoid.Server.Net
 			byte[] sendbuf = Encoding.ASCII.GetBytes(what);
 			where.Port = 11001;
 			s.SendTo(sendbuf, where);
-
-			Console.WriteLine($"Message sent to ({where}): " + what);
 		}
 	}
 }

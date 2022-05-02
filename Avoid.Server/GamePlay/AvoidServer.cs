@@ -60,18 +60,39 @@ namespace Avoid.Server.GamePlay
 				// Send circle every 0.1 second
 				if (lastGennedCircle != null)
 				{
+					fslp++;
+					if (fslp > 100)
+					{
+						fslp = 0;
+						Console.WriteLine("No packages came for 100 iterations. Restarting the server.");
+						Restart();
+					}
 					foreach (var p in players)
 					{
 						sender.SendData(p.CallBackIP, "AC " + lastGennedCircle.width + " " + lastGennedCircle.Position + " " + lastGennedCircle.Speed + " " + lastGennedCircle.Color);
 					}
 					lastGennedCircle = null;
+
+					// Check if game shall continue
+					var winner = DetectWinCondition();
+					if (winner != null)
+					{
+						// End and restart game
+						Console.WriteLine(winner);
+						EndAndRestartGame();
+					}
 				}
 
 				// Update playerdata command
 				if (newMessage)
 				{
+
 					if (lastMessageRecieved.Contains("PD "))
+					{
 						UpdatePlayerData(lastMessageRecieved.Replace("PD ", "").Replace("; ", ";"));
+						fslp = 0;
+					}
+
 					newMessage = false;
 
 					// Send data about other players every 10 loops
@@ -79,17 +100,28 @@ namespace Avoid.Server.GamePlay
 					{
 						foreach (var p in players)
 						{
-
 							foreach (var t in players)
 								if (p.Name != t.Name)
-									sender.SendData(p.CallBackIP, "UP " + t.Name + " " + t.CursorPosition + " " + t.CursorSpeed);
-
+									sender.SendData(p.CallBackIP, "UP " + t.Name + " " + t.CursorPosition + " " + t.CursorSpeed + " " + t.health);
 						}
 					}
 				}
-
-
 			}
+		}
+
+		private void EndAndRestartGame()
+		{
+			foreach (var p in players)
+				p.health = 1;
+			foreach (var p in players)
+				sender.SendData(p.CallBackIP, "GO");
+			BeforeStart();
+		}
+
+		private void Restart()
+		{
+			players.Clear();
+			BeforeStart();
 		}
 
 		private void UpdatePlayerData(string arg)
@@ -107,6 +139,25 @@ namespace Avoid.Server.GamePlay
 			}
 		}
 
+		private string DetectWinCondition()
+		{
+			int alivePlayers = 0;
+			string winner = null;
+			foreach (var p in players)
+			{
+				if (p.health > 0.000001f)
+				{
+					winner = p.Name;
+					alivePlayers++;
+				}
+
+			}
+
+			if (alivePlayers <= 1)
+				return "WON: " + winner;
+			return null;
+		}
+
 		public void Start()
 		{
 			// Setup listening thread
@@ -121,7 +172,7 @@ namespace Avoid.Server.GamePlay
 		{
 			while (true)
 			{
-				Thread.Sleep(10);
+				Thread.Sleep(40);
 				lastGennedCircle = Circle.GenRandom();
 			}
 		}
