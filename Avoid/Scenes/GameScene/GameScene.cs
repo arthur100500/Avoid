@@ -76,6 +76,8 @@ namespace Avoid.Scenes.GameScene
 				else
 					((Circle)v).CurrentColor = ((Circle)v).Color;
 
+			if (Math.Abs(cpos.X) > 1 || Math.Abs(cpos.Y) > 1)
+				health -= 0.008f;
 			if (state == GameState.Running)
 				health += 0.001f;
 			health = MathF.Min(health, 1);
@@ -104,7 +106,7 @@ namespace Avoid.Scenes.GameScene
 			scoreLabel.textSprite.textOpacity = 1f;
 			scoreLabel.Load();
 
-			hb = new Healthbar(new Bounds(0.95, 0.95, 0.05, 0.87), _app);
+			hb = new Healthbar(new Bounds(0.990, 0.990, 0.05, 0.92), _app);
 
 			hb.Load();
 		}
@@ -164,6 +166,11 @@ namespace Avoid.Scenes.GameScene
 			health = 1;
 			state = GameState.Running;
 			score = 0;
+		}
+
+		public void Close()
+		{
+			
 		}
 	}
 }

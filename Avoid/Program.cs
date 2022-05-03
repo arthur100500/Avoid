@@ -4,9 +4,18 @@ namespace Avoid
 {
 	public static class Program
 	{
-		public static void Main(string[] ars)
+		public static void Main(string[] args)
 		{
-			App.Create().Run();
+			try
+			{
+				App.Create().Run();
+			}
+			catch(Exception ex)
+			{
+				Console.WriteLine(ex.ToString());
+				File.WriteAllText("ErrorLog-" + DateTime.Now.ToShortDateString + ".txt", ex.ToString());
+				Console.ReadLine();
+			}
 		}
 	}
 }

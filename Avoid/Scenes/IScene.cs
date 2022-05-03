@@ -8,5 +8,6 @@ namespace Avoid
 		public void Update();
 		public string Name { get;}
 		public void FixedUpdate();
+		void Close();
 	}
 }

@@ -9,13 +9,14 @@ using Avoid.Gameplay;
 using Avoid.Gameplay.Obstacle;
 using Avoid.Scenes;
 using Avoid.Scenes.GameScene;
+using System.ComponentModel;
 
 namespace Avoid
 {
 	public class App : GameWindow
 	{
 		private float oTime;
-		IScene scene = new GameScene();
+		IScene scene = new MainMenuScene();
 		private App(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings)
 		{
 			// Enable things for correct texture opacity handling
@@ -44,6 +45,13 @@ namespace Avoid
 			return wnd;
 		}
 
+		internal void SetScene(IScene gameScene)
+		{
+			gameScene.Application = this;
+			gameScene.Load();
+			Title = gameScene.Name;
+			scene = gameScene;
+		}
 
 		protected override void OnLoad()
 		{
@@ -83,6 +91,15 @@ namespace Avoid
 		private void FixedUpdate()
 		{
 			scene.FixedUpdate();
+		}
+
+		protected override void OnClosing(CancelEventArgs e)
+		{
+			scene.Close();
+			
+			base.OnClosing(e);
+
+			Environment.Exit(0);
 		}
 
 		protected override void OnResize(ResizeEventArgs e)
