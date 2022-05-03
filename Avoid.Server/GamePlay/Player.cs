@@ -17,6 +17,7 @@ namespace Avoid.Server.GamePlay
 		public float health;
 		public Vector2 CursorPosition;
 		public Vector2 CursorSpeed;
+		public ulong LastFrameUpdated;
 
 		public Player(string name, IPEndPoint ip)
 		{

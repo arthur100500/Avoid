@@ -83,5 +83,11 @@ namespace Avoid.Scenes.Multiplayer
 				if (button.textSprite.Text == name)
 					button.colorIdle = button.colorHover = new Vector4(0.9f, 0.1f, 0.1f, 0.9f);
 		}
+
+		internal void MarkAllPlayersAlive()
+		{
+			foreach (var button in buttons)
+				button.colorIdle = button.colorHover = new Vector4(1f, 1f, 1f, 0.9f);
+		}
 	}
 }

@@ -15,10 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Files\textures\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="Files\font.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -27,6 +23,9 @@
     </None>
     <None Update="Files\highscores.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\textures\mmlogo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Files\mp.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

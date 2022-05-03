@@ -163,9 +163,9 @@ namespace Avoid.Scenes.GameScene
 			cursor = new Cursor(cursorT, new Bounds(0.2, 0.2, -0.2, -0.2));
 			cursor.Load();
 
-			splash = new MultiplayerGameoverSplash("Idk you should not see this at all", _app);
+			splash = new MultiplayerGameoverSplash("Waiting for other players...", Close, SendStartMessage, _app);
 			splash.Load();
-			splash.isHidden = true;
+			splash.isHidden = false;
 
 			hb = new Healthbar(new Bounds(0.990, 0.990, 0.05, 0.92), _app);
 			hb.Load();
@@ -189,23 +189,28 @@ namespace Avoid.Scenes.GameScene
 
 		private void StartRecieving()
 		{
-			while (true)
+			try
 			{
-				lastMessageRecieved = listener.Recieve();
-				newMessage = true;
-				// New circle message
-				if (lastMessageRecieved.StartsWith("AC"))
-					newCircleMessage = lastMessageRecieved;
-				// Gameover
-				if (lastMessageRecieved == "GO")
-					gameoverRequest = true;
+				while (true)
+				{
+					lastMessageRecieved = listener.Recieve();
+					newMessage = true;
+					// New circle message
+					if (lastMessageRecieved.StartsWith("AC"))
+						newCircleMessage = lastMessageRecieved;
+					// Gameover
+					if (lastMessageRecieved == "GO")
+						gameoverRequest = true;
 
-				// Game begin
-				if (lastMessageRecieved == "GB")
-					Retry();
+					// Game begin
+					if (lastMessageRecieved == "GB")
+						Retry();
 
-				Console.WriteLine(lastMessageRecieved);
+					Console.WriteLine(lastMessageRecieved);
+				}
 			}
+			catch (Exception ex)
+			{ }
 		}
 
 		public void Render()
@@ -217,7 +222,8 @@ namespace Avoid.Scenes.GameScene
 			GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
 			// UI
-			hb.Render();
+			if (State == MultiplayerGameState.Running)
+				hb.Render();
 			mpl.Render();
 			splash?.Render();
 
@@ -271,6 +277,8 @@ namespace Avoid.Scenes.GameScene
 			health = 1;
 			State = MultiplayerGameState.Running;
 			score = 0;
+
+			mpl.MarkAllPlayersAlive();
 		}
 
 		private void RecieveCircle(string circledata)
@@ -281,6 +289,7 @@ namespace Avoid.Scenes.GameScene
 			obstacles.Last().Position = FromString2(lines[1]);
 			obstacles.Last().Speed = FromString2(lines[2]);
 			((Circle)obstacles.Last()).CurrentColor = FromString4(lines[3]);
+			((Circle)obstacles.Last()).Color = FromString4(lines[3]);
 			obstacles.Last().Load();
 			obstacles.Last().Update();
 
@@ -326,6 +335,8 @@ namespace Avoid.Scenes.GameScene
 		public void Close()
 		{
 			// Here should be code to stop the thread but idk how
+
+			listener.Close();
 		}
 	}
 }

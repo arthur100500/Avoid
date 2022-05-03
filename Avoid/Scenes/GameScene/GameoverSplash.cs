@@ -12,6 +12,7 @@ namespace Avoid.Scenes.GameScene
 		private Button scoreLabel;
 		private Button highscoreLabel;
 		private Button retryButton;
+		private Button returnButton;
 		private Bounds bounds;
 		private int[] pixelCoords = new int[4];
 		private App _app;
@@ -38,10 +39,15 @@ namespace Avoid.Scenes.GameScene
 			highscoreLabel = new Button(new Bounds(0.6, 0.4, -0.6, 0.25), "Highscore: " + score, () => { }, app);
 			highscoreLabel.colorHover = highscoreLabel.colorIdle = new Vector4(1, 1, 1, 0);
 
-			retryButton = new Button(new Bounds(0.3, -0.32, -0.3, -0.45), "   Try again", retry, app);
+			retryButton = new Button(new Bounds(0.59, -0.36, 0.01, -0.49), "Try Again", retry, app);
 			retryButton.colorHover = new Vector4(1, 0.5f, 0, 1.1f);
 			retryButton.colorIdle = new Vector4(1, 1, 1, 0.9f);
 			retryButton.textSprite.textOpacity = 1f;
+
+			returnButton = new Button(new Bounds(-0.01, -0.36, -0.59, -0.49), "Main Menu", () => { app.SetScene(new MainMenuScene()); }, app);
+			returnButton.colorHover = new Vector4(0, 0.5f, 1, 1.1f);
+			returnButton.colorIdle = new Vector4(1, 1, 1, 0.9f);
+			returnButton.textSprite.textOpacity = 1f;
 		}
 		public void Load()
 		{
@@ -55,7 +61,8 @@ namespace Avoid.Scenes.GameScene
 			scoreLabel.Update(_app.MouseState);
 			highscoreLabel.Load();
 			highscoreLabel.Update(_app.MouseState);
-
+			returnButton.Load();
+			returnButton.Update(_app.MouseState);
 
 		}
 
@@ -68,6 +75,7 @@ namespace Avoid.Scenes.GameScene
 			scoreLabel.Render();
 			highscoreLabel.Render();
 			retryButton.Render();
+			returnButton.Render();
 		}
 
 		public void SetScore(int score, int highscore)
@@ -84,6 +92,7 @@ namespace Avoid.Scenes.GameScene
 			scoreLabel.Update(state);
 			highscoreLabel.Update(state);
 			retryButton.Update(state);
+			returnButton.Update(state);
 		}
 
 		private void UpdatePixelScale()

@@ -13,7 +13,7 @@ namespace Avoid
 			catch(Exception ex)
 			{
 				Console.WriteLine(ex.ToString());
-				File.WriteAllText("ErrorLog-" + DateTime.Now + ".txt", ex.ToString());
+				File.WriteAllText("ErrorLog-" + DateTime.Now.ToShortDateString + ".txt", ex.ToString());
 				Console.ReadLine();
 			}
 		}

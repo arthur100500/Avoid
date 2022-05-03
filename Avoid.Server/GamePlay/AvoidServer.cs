@@ -23,6 +23,7 @@ namespace Avoid.Server.GamePlay
 		private Circle lastGennedCircle;
 		private ulong fc = 0;
 		private ulong fslp = 0;
+		private ulong ptlp;
 
 		public AvoidServer()
 		{
@@ -92,11 +93,12 @@ namespace Avoid.Server.GamePlay
 				// Update playerdata command
 				if (newMessage)
 				{
-
 					if (lastMessageRecieved.Contains("PD "))
 					{
+						ptlp++;
 						UpdatePlayerData(lastMessageRecieved.Replace("PD ", "").Replace("; ", ";"));
 						fslp = 0;
+						ClearLeftPlayers();
 					}
 
 					newMessage = false;
@@ -113,6 +115,17 @@ namespace Avoid.Server.GamePlay
 					}
 				}
 			}
+		}
+
+		private void ClearLeftPlayers()
+		{
+			foreach (var p in players)
+				if (ptlp - 50 > p.LastFrameUpdated)
+				{
+					players.Remove(p);
+					Console.WriteLine("Removed player: " + p.Name);
+					break;
+				}
 		}
 
 		private void EndAndRestartGame()
@@ -141,6 +154,7 @@ namespace Avoid.Server.GamePlay
 					players[i].CursorSpeed = FromString2(arg.Split(" : ")[1].Split(" ")[4]);
 					players[i].score = int.Parse(arg.Split(" : ")[1].Split(" ")[1]);
 					players[i].health = float.Parse(arg.Split(" : ")[1].Split(" ")[2]);
+					players[i].LastFrameUpdated = ptlp;
 				}
 			}
 		}

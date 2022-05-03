@@ -24,10 +24,14 @@ namespace Avoid.Net
 
 		public string Recieve()
 		{
-
 			byte[] bytes = listener.Receive(ref groupEP);
 
 			return Encoding.ASCII.GetString(bytes, 0, bytes.Length);
+		}
+
+		internal void Close()
+		{
+			listener.Close();
 		}
 	}
 }

@@ -16,7 +16,7 @@ namespace Avoid
 	public class App : GameWindow
 	{
 		private float oTime;
-		IScene scene = new MultiplayerGameScene();
+		IScene scene = new MainMenuScene();
 		private App(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings) : base(gameWindowSettings, nativeWindowSettings)
 		{
 			// Enable things for correct texture opacity handling
@@ -45,6 +45,13 @@ namespace Avoid
 			return wnd;
 		}
 
+		internal void SetScene(IScene gameScene)
+		{
+			gameScene.Application = this;
+			gameScene.Load();
+			Title = gameScene.Name;
+			scene = gameScene;
+		}
 
 		protected override void OnLoad()
 		{
